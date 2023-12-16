@@ -1,0 +1,17 @@
+galaxy_info:
+  author: Albert Akmukhametov
+  description: Foundry as a Systemd unit with separate user
+  company: Home Sweet Home
+  license: MIT
+
+  min_ansible_version: 2.1
+
+  galaxy_tags:
+    - systemd
+    - foundry
+
+dependencies:
+  - role: geerlingguy.nodejs
+    vars:
+      nodejs_version: '18.x'
+  - role: andrewrothstein.unarchive-deps

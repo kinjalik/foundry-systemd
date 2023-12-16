@@ -1,0 +1,5 @@
+---
+# vars file for foundry-systemd
+
+foundry_service_name: 'foundry.service'
+foundry_service_dir: '/lib/systemd/system'

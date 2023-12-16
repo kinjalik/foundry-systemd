@@ -1,0 +1,59 @@
+---
+- name: Fail if no foundry timed url
+  ansible.builtin.fail:
+    msg: No Foundry timed URL found! Provide it usin --extra-vars="foundry_distrib_url=.."
+  when: foundry_distrib_url is undefined
+
+- name: Create user
+  ansible.builtin.user:
+    name: "{{ foundry_user }}"
+    state: present
+    shell: /usr/bin/nologin
+    home: "{{ foundry_home }}"
+    create_home: true
+
+- name: Retrieve distribution
+  block:
+    - name: Check if Foundry is already installed
+      ansible.builtin.stat:
+        path: "{{ foundry_home }}/app/foundryvtt"
+      register: foundry_instance
+
+    - name: Report existence of Foundry
+      ansible.builtin.debug:
+        msg: "Foundry already exists in {{ foundry_home }}/app, {% if foundry_update %}updating{% else %} skipping{% endif %}"
+      when: foundry_instance.stat.exists
+
+    - name: Wipe old installation if Foundry installed and mode is update
+      ansible.builtin.file:
+        path: "{{ foundry_home }}/app/"
+        state: absent
+      when: foundry_instance.stat.exists and foundry_update
+
+    - name: Prepare taget directory
+      ansible.builtin.file:
+        path: "{{ foundry_home }}/app"
+        state: directory
+      when: (not foundry_instance.stat.exists) or foundry_update
+    - name: Download and unarchive the distribution
+      ansible.builtin.unarchive:
+        src: "{{ foundry_distrib_url }}"
+        dest: "{{ foundry_home }}/app"
+        owner: "{{ foundry_user }}"
+        remote_src: true
+      when: (not foundry_instance.stat.exists) or foundry_update
+
+- name: Create systemd unit
+  ansible.builtin.template:
+    src: templates/foundry.service.j2
+    dest: "{{ foundry_service_dir }}/{{ foundry_service_name }}"
+    owner: root
+    group: root
+    mode: '0666'
+
+- name: Run systemd unit
+  ansible.builtin.systemd_service:
+    name: "{{ foundry_service_name }}"
+    enabled: true
+    state: restarted
+    daemon_reload: true

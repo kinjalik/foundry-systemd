@@ -1,0 +1,7 @@
+---
+# defaults file for foundry-systemd
+
+foundry_update: false # If true - will redownload the distribution again
+foundry_home: '/var/lib/foundry'
+foundry_user: 'foundry'
+foundry_port: ''
