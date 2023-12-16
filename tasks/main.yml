@@ -33,6 +33,7 @@
     - name: Prepare taget directory
       ansible.builtin.file:
         path: "{{ foundry_home }}/app"
+        mode: '0755'
         state: directory
       when: (not foundry_instance.stat.exists) or foundry_update
     - name: Download and unarchive the distribution
